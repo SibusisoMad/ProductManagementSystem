@@ -1,6 +1,6 @@
 ﻿namespace ProductManagementSystem.Api.DTOs;
 
-public class CategoryDto(
+public record CategoryDto(
     int Id,
     string Name,
     string? Description,

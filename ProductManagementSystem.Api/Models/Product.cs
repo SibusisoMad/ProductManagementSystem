@@ -2,7 +2,7 @@
 
 namespace ProductManagementSystem.Api.Models
 {
-    public class Product 
+    public class Product : IComparable<Product>
     {
         public int Id { get; set; }
 
@@ -31,7 +31,14 @@ namespace ProductManagementSystem.Api.Models
 
         public virtual Category? Category { get; set; }
 
-        
-        
+   
+        public int CompareTo(Product? other)
+        {
+            if (other is null) return 1;
+
+          
+            var nameComparison = string.Compare(Name, other.Name, StringComparison.OrdinalIgnoreCase);
+            return nameComparison != 0 ? nameComparison : Price.CompareTo(other.Price);
+        }
     }
 }
