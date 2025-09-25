@@ -32,7 +32,7 @@ public record UpdateProductDto(
 );
 
 public record ProductSearchDto(
-    string? Name,
+    string? Search,
     int? CategoryId,
     int Page = 1,
     int PageSize = 10
@@ -45,4 +45,3 @@ public record PagedResultDto<T>(
     int TotalItems,
     int TotalPages
 );
-

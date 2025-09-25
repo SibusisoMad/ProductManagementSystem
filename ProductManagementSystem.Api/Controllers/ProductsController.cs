@@ -21,15 +21,20 @@ public class ProductsController : ControllerBase
         _productService = productService;
     }
 
+    /// <summary>
+    /// Get products with optional search and filtering
+    /// </summary>
+    /// <param name="search">
     [HttpGet]
-    public async Task<PagedResultDto<ProductDto>> GetProducts(
-        [FromQuery] string? name = null,
-        [FromQuery] int? categoryId = null,
-        [FromQuery] int page = 1,
+    public async Task<PagedResultDto<ProductDto>> GetProducts([FromQuery] string? search = null,[FromQuery] int? categoryId = null,[FromQuery] int page = 1,
         [FromQuery] int pageSize = 10)
     {
         _logger.LogDebug("{Method}", nameof(GetProducts));
-        var searchDto = new ProductSearchDto(name, categoryId, page, pageSize);
+
+        page = Math.Max(1, page);
+        pageSize = Math.Max(1, Math.Min(100, pageSize));
+
+        var searchDto = new ProductSearchDto(search, categoryId, page, pageSize);
         return await _productService.GetProductsAsync(searchDto);
     }
 
@@ -72,17 +77,17 @@ public class ProductsController : ControllerBase
         return await _productService.SearchProductsAsync(query, maxResults);
     }
 
-  
+    // Demonstrates manual model binding and custom JSON serialization
     [HttpPost("bulk")]
     public async Task<ActionResult<string>> CreateProductsBulk()
     {
         _logger.LogDebug("{Method}", nameof(CreateProductsBulk));
 
-       
+        // Manual model binding - reading from request body manually
         using var reader = new StreamReader(Request.Body);
         var requestBody = await reader.ReadToEndAsync();
 
-
+        // Manual JSON deserialization with custom options
         var jsonOptions = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true,

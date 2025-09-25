@@ -35,7 +35,7 @@ public class ProductService : IProductService
 
     public async Task<PagedResultDto<ProductDto>> GetProductsAsync(ProductSearchDto searchDto)
     {
-        var cacheKey = $"products_{searchDto.Name}_{searchDto.CategoryId}_{searchDto.Page}_{searchDto.PageSize}";
+        var cacheKey = $"products_{searchDto.Search}_{searchDto.CategoryId}_{searchDto.Page}_{searchDto.PageSize}";
 
        
         var cachedResult = _cacheService.Get<PagedResultDto<ProductDto>>(cacheKey);
@@ -50,12 +50,12 @@ public class ProductService : IProductService
         List<Product> filteredProducts;
 
         
-        if (!string.IsNullOrWhiteSpace(searchDto.Name))
+        if (!string.IsNullOrWhiteSpace(searchDto.Search))
         {
-            _logger.LogDebug("Using fuzzy search for term: {SearchTerm}", searchDto.Name);
+            _logger.LogDebug("Using fuzzy search for term: {SearchTerm}", searchDto.Search);
 
             
-            var searchResults = _searchEngine.Search(categoryFilteredProducts, searchDto.Name, int.MaxValue);
+            var searchResults = _searchEngine.Search(categoryFilteredProducts, searchDto.Search, int.MaxValue);
             filteredProducts = searchResults.Select(r => r.Item).ToList();
         }
         else
