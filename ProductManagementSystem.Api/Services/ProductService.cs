@@ -4,6 +4,7 @@ using ProductManagementSystem.Api.Models;
 using ProductManagementSystem.Api.Repositories.Interfaces;
 using ProductManagementSystem.Api.Services.Interfaces;
 using ProductManagementSystem.Api.Utils;
+using System.Text.Json;
 
 namespace ProductManagementSystem.Api.Services;
 
@@ -315,6 +316,58 @@ public class ProductService : IProductService
     {
    
         _cacheService.Clear();
+    }
+
+    public async Task<string> ProcessBulkCreateFromJsonAsync(string requestBody)
+    {
+        try
+        {
+            _logger.LogDebug("Processing bulk create from JSON request body");
+
+            
+            var jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+
+            var products = JsonSerializer.Deserialize<List<CreateProductDto>>(requestBody, jsonOptions);
+
+            if (products == null)
+            {
+                _logger.LogWarning("Failed to deserialize products from request body");
+                throw new ArgumentException("Invalid JSON format or empty request body");
+            }
+
+            var createdProducts = await BulkCreateProductsAsync(products);
+
+            
+            var response = new
+            {
+                CreatedCount = createdProducts.Count(),
+                CreatedProducts = createdProducts,
+                ProcessedAt = DateTime.UtcNow
+            };
+
+            var responseJson = JsonSerializer.Serialize(response, new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                WriteIndented = true
+            });
+
+            _logger.LogInformation("Successfully processed bulk create for {Count} products", response.CreatedCount);
+            return responseJson;
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogError(ex, "JSON deserialization failed during bulk create");
+            throw new ArgumentException("Invalid JSON format", ex);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred during bulk create processing");
+            throw;
+        }
     }
 
     private static ProductDto MapToDto(Product product, string? categoryName = null)

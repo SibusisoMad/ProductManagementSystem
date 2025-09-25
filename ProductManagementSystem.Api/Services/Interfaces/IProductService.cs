@@ -11,4 +11,6 @@ public interface IProductService
     Task<bool> DeleteProductAsync(int id);
     Task<IEnumerable<ProductDto>> SearchProductsAsync(string query, int maxResults = 10);
     Task<IEnumerable<ProductDto>> BulkCreateProductsAsync(IEnumerable<CreateProductDto> products);
+
+    Task<string> ProcessBulkCreateFromJsonAsync(string requestBody);
 }

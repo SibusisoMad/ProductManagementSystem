@@ -69,47 +69,24 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet("search")]
-    public async Task<IEnumerable<ProductDto>> SearchProducts(
-        [FromQuery] string query,
-        [FromQuery] int maxResults = 10)
+    public async Task<IEnumerable<ProductDto>> SearchProducts([FromQuery] string query,[FromQuery] int maxResults = 10)
     {
         _logger.LogDebug("{Method}", nameof(SearchProducts));
         return await _productService.SearchProductsAsync(query, maxResults);
     }
 
-    // Demonstrates manual model binding and custom JSON serialization
+    
     [HttpPost("bulk")]
     public async Task<ActionResult<string>> CreateProductsBulk()
     {
         _logger.LogDebug("{Method}", nameof(CreateProductsBulk));
 
-        // Manual model binding - reading from request body manually
+        
         using var reader = new StreamReader(Request.Body);
         var requestBody = await reader.ReadToEndAsync();
 
-        // Manual JSON deserialization with custom options
-        var jsonOptions = new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        };
 
-        var products = JsonSerializer.Deserialize<List<CreateProductDto>>(requestBody, jsonOptions);
-        var createdProducts = await _productService.BulkCreateProductsAsync(products ?? new List<CreateProductDto>());
-
-        // Custom JSON serialization for response
-        var response = new
-        {
-            CreatedCount = createdProducts.Count(),
-            CreatedProducts = createdProducts,
-            ProcessedAt = DateTime.UtcNow
-        };
-
-        var responseJson = JsonSerializer.Serialize(response, new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            WriteIndented = true
-        });
+        var responseJson = await _productService.ProcessBulkCreateFromJsonAsync(requestBody);
 
         return Content(responseJson, "application/json");
     }
