@@ -46,8 +46,9 @@ export interface ProductSearchParams {
 }
 
 export interface ProductListResponse {
-  products: Product[];
-  totalCount: number;
-  currentPage: number;
+  items: Product[];
+  totalItems: number;
+  page: number;
+  pageSize: number;
   totalPages: number;
 }

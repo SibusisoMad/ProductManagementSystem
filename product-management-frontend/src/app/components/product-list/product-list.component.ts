@@ -54,10 +54,8 @@ import { LoadingSpinnerComponent } from '../loading-spinner/loading-spinner.comp
         </div>
       </div>
 
-      <!-- Loading State -->
       <app-loading-spinner *ngIf="loading$ | async"></app-loading-spinner>
 
-      <!-- Error State -->
       <div 
         *ngIf="error$ | async as error" 
         class="alert alert-error">
@@ -69,12 +67,10 @@ import { LoadingSpinnerComponent } from '../loading-spinner/loading-spinner.comp
         </button>
       </div>
 
-      <!-- Products Grid -->
       <div 
         *ngIf="!(loading$ | async) && !(error$ | async)" 
         class="products-grid">
         
-        <!-- Empty State -->
         <div 
           *ngIf="(products$ | async)?.length === 0" 
           class="empty-state">
@@ -86,7 +82,6 @@ import { LoadingSpinnerComponent } from '../loading-spinner/loading-spinner.comp
           </button>
         </div>
 
-        <!-- Products List -->
         <div 
           *ngFor="let product of products$ | async; trackBy: trackByProductId" 
           class="product-card">
@@ -99,7 +94,7 @@ import { LoadingSpinnerComponent } from '../loading-spinner/loading-spinner.comp
           <div class="product-body">
             <p class="product-description">{{product.description}}</p>
             <div class="product-details">
-              <span class="product-price">\${{product.price | number:'1.2-2'}}</span>
+              <span class="product-price">R {{product.price | number:'1.2-2'}}</span>
               <span 
                 class="product-quantity"
                 [class.low-stock]="product.quantity < 10">
@@ -124,7 +119,6 @@ import { LoadingSpinnerComponent } from '../loading-spinner/loading-spinner.comp
       </div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
     <div 
       *ngIf="productToDelete" 
       class="modal-overlay" 
@@ -420,21 +414,21 @@ import { LoadingSpinnerComponent } from '../loading-spinner/loading-spinner.comp
   `]
 })
 export class ProductListComponent implements OnInit, OnDestroy {
-  private readonly productService = inject(ProductService);
-  private readonly categoryService = inject(CategoryService);
+  private readonly productService: ProductService = inject(ProductService);
+  private readonly categoryService: CategoryService = inject(CategoryService);
   private readonly destroy$ = new Subject<void>();
 
-  // Form controls
+  constructor() {
+  }
+
   categoryFilter = new FormControl<string>('');
   searchControl = new FormControl<string>('');
 
-  // Observables
   products$ = this.productService.products$;
   categories$ = this.categoryService.categories$;
   loading$ = this.productService.loading$;
   error$ = this.productService.error$;
 
-  // Component state
   productToDelete: Product | null = null;
 
   ngOnInit(): void {
@@ -448,10 +442,8 @@ export class ProductListComponent implements OnInit, OnDestroy {
   }
 
   private loadInitialData(): void {
-    // Load categories first
+
     this.categoryService.getCategories().subscribe();
-    
-    // Load products
     this.productService.getProducts().subscribe();
   }
 
@@ -511,4 +503,4 @@ export class ProductListComponent implements OnInit, OnDestroy {
   trackByProductId(index: number, product: Product): number {
     return product.id;
   }
-}
+} 

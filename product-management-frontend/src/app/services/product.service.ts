@@ -11,27 +11,26 @@ import {
   ProductListResponse 
 } from '../models/product.model';
 import { ApiError } from '../models/api.model';
+import { ApiConfigService } from './api-config.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'https://localhost:7189/api/products'; // Adjust to match your API port
+  private readonly apiConfig = inject(ApiConfigService);
+  private readonly baseUrl = 'http://localhost:5263/api/products';
   
-  // State management using BehaviorSubject
   private productsSubject = new BehaviorSubject<Product[]>([]);
   private loadingSubject = new BehaviorSubject<boolean>(false);
   private errorSubject = new BehaviorSubject<string | null>(null);
 
-  // Public observables
+  
   public products$ = this.productsSubject.asObservable();
   public loading$ = this.loadingSubject.asObservable();
   public error$ = this.errorSubject.asObservable();
 
-  /**
-   * Get all products with optional search and filtering
-   */
+  
   getProducts(params?: ProductSearchParams): Observable<ProductListResponse> {
     this.setLoading(true);
     this.clearError();
@@ -46,55 +45,50 @@ export class ProductService {
     }
 
     return this.http.get<ProductListResponse>(this.baseUrl, { params: httpParams }).pipe(
-      tap(response => {
-        this.productsSubject.next(response.products);
+      tap((response: ProductListResponse) => {
+        console.log('ProductService: API Response:', response);
+        console.log('ProductService: First product:', response.items[0]);
+        this.productsSubject.next(response.items);
         this.setLoading(false);
       }),
-      catchError(error => this.handleError(error))
+      catchError((error: any) => this.handleError(error))
     );
   }
 
-  /**
-   * Get product by ID
-   */
   getProduct(id: number): Observable<Product> {
     this.setLoading(true);
     this.clearError();
 
-    return this.http.get<Product>(`${this.baseUrl}/${id}`).pipe(
+    const url = `http://localhost:5263/api/products/${id}`;
+    return this.http.get<Product>(url).pipe(
       tap(() => this.setLoading(false)),
-      catchError(error => this.handleError(error))
+      catchError((error: any) => this.handleError(error))
     );
   }
 
-  /**
-   * Create new product
-   */
   createProduct(product: CreateProductRequest): Observable<Product> {
     this.setLoading(true);
     this.clearError();
 
     return this.http.post<Product>(this.baseUrl, product).pipe(
-      tap(newProduct => {
+      tap((newProduct: Product) => {
         const currentProducts = this.productsSubject.value;
         this.productsSubject.next([...currentProducts, newProduct]);
         this.setLoading(false);
       }),
-      catchError(error => this.handleError(error))
+      catchError((error: any) => this.handleError(error))
     );
   }
 
-  /**
-   * Update existing product
-   */
   updateProduct(id: number, product: UpdateProductRequest): Observable<Product> {
     this.setLoading(true);
     this.clearError();
 
-    return this.http.put<Product>(`${this.baseUrl}/${id}`, product).pipe(
-      tap(updatedProduct => {
+    const url = `http://localhost:5263/api/products/${id}`;
+    return this.http.put<Product>(url, product).pipe(
+      tap((updatedProduct: Product) => {
         const currentProducts = this.productsSubject.value;
-        const index = currentProducts.findIndex(p => p.id === id);
+        const index = currentProducts.findIndex((p: Product) => p.id === id);
         if (index !== -1) {
           const updated = [...currentProducts];
           updated[index] = updatedProduct;
@@ -102,66 +96,50 @@ export class ProductService {
         }
         this.setLoading(false);
       }),
-      catchError(error => this.handleError(error))
+      catchError((error: any) => this.handleError(error))
     );
   }
 
-  /**
-   * Delete product
-   */
   deleteProduct(id: number): Observable<void> {
     this.setLoading(true);
     this.clearError();
 
-    return this.http.delete<void>(`${this.baseUrl}/${id}`).pipe(
+    const url = `http://localhost:5263/api/products/${id}`;
+    return this.http.delete<void>(url).pipe(
       tap(() => {
         const currentProducts = this.productsSubject.value;
-        this.productsSubject.next(currentProducts.filter(p => p.id !== id));
+        this.productsSubject.next(currentProducts.filter((p: Product) => p.id !== id));
         this.setLoading(false);
       }),
-      catchError(error => this.handleError(error))
+      catchError((error: any) => this.handleError(error))
     );
   }
 
-  /**
-   * Search products by name
-   */
   searchProducts(searchTerm: string, categoryId?: number): Observable<Product[]> {
     const params: ProductSearchParams = { search: searchTerm };
     if (categoryId) params.categoryId = categoryId;
 
     return this.getProducts(params).pipe(
-      map(response => response.products)
+      map((response: ProductListResponse) => response.items)
     );
   }
 
-  /**
-   * Clear current error state
-   */
   clearError(): void {
     this.errorSubject.next(null);
   }
 
-  /**
-   * Set loading state
-   */
   private setLoading(loading: boolean): void {
     this.loadingSubject.next(loading);
   }
 
-  /**
-   * Handle HTTP errors
-   */
   private handleError(error: HttpErrorResponse): Observable<never> {
     this.setLoading(false);
     
     let errorMessage = 'An error occurred while processing your request.';
     
     if (error.error instanceof ErrorEvent) {
-      // Client-side error
       errorMessage = `Client Error: ${error.error.message}`;
     } else {
-      // Server-side error
       if (error.status === 0) {
         errorMessage = 'Unable to connect to the server. Please check your connection.';
       } else if (error.status === 404) {
@@ -173,6 +151,10 @@ export class ProductService {
       } else {
         errorMessage = `Server Error: ${error.status} - ${error.error?.message || error.message}`;
       }
+    }
+
+    if (this.apiConfig.isLoggingEnabled()) {
+      console.error('ProductService Error:', error);
     }
 
     this.errorSubject.next(errorMessage);

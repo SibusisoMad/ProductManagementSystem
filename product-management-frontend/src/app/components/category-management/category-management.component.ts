@@ -744,13 +744,14 @@ export class CategoryManagementComponent implements OnInit, OnDestroy {
 
   deleteCategory(): void {
     if (this.categoryToDelete) {
+      const categoryId = this.categoryToDelete.id;
       this.categoryService.deleteCategory(this.categoryToDelete.id).pipe(
         takeUntil(this.destroy$)
       ).subscribe({
         next: () => {
           this.categoryToDelete = null;
           // If we were editing this category, cancel the edit
-          if (this.editingCategory?.id === this.categoryToDelete?.id) {
+          if (this.editingCategory?.id === categoryId) {
             this.cancelEdit();
           }
         },

@@ -33,7 +33,7 @@ npm start
 
 The frontend is configured to work with the Product Management API. Update the API URLs in the service files if your API runs on a different port:
 
-- Default API URL: `https://localhost:7189/api`
+- Default API URL: `http://localhost:5263/api`
 - Product endpoints: `/api/products`
 - Category endpoints: `/api/categories`
 

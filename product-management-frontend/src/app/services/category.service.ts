@@ -10,21 +10,21 @@ import {
   UpdateCategoryRequest 
 } from '../models/category.model';
 import { ApiError } from '../models/api.model';
+import { ApiConfigService } from './api-config.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CategoryService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'https://localhost:7189/api/categories'; // Adjust to match your API port
+  private readonly apiConfig = inject(ApiConfigService);
+  private readonly baseUrl = 'http://localhost:5263/api/categories';
   
-  // State management using BehaviorSubject
   private categoriesSubject = new BehaviorSubject<Category[]>([]);
   private categoryTreeSubject = new BehaviorSubject<CategoryTreeNode[]>([]);
   private loadingSubject = new BehaviorSubject<boolean>(false);
   private errorSubject = new BehaviorSubject<string | null>(null);
 
-  // Public observables
   public categories$ = this.categoriesSubject.asObservable();
   public categoryTree$ = this.categoryTreeSubject.asObservable();
   public loading$ = this.loadingSubject.asObservable();

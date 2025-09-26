@@ -48,7 +48,6 @@ import { LoadingSpinnerComponent } from '../loading-spinner/loading-spinner.comp
         class="product-form">
 
         <div class="form-grid">
-          <!-- Product Name -->
           <div class="form-group">
             <label for="name">Product Name *</label>
             <input 
@@ -72,7 +71,6 @@ import { LoadingSpinnerComponent } from '../loading-spinner/loading-spinner.comp
             </div>
           </div>
 
-          <!-- SKU -->
           <div class="form-group">
             <label for="sku">SKU *</label>
             <input 
@@ -93,11 +91,10 @@ import { LoadingSpinnerComponent } from '../loading-spinner/loading-spinner.comp
             </div>
           </div>
 
-          <!-- Price -->
           <div class="form-group">
-            <label for="price">Price *</label>
+            <label for="price">Price (ZAR) *</label>
             <div class="input-group">
-              <span class="input-prefix">$</span>
+              <span class="input-prefix">R</span>
               <input 
                 type="number" 
                 id="price" 
@@ -392,11 +389,11 @@ import { LoadingSpinnerComponent } from '../loading-spinner/loading-spinner.comp
   `]
 })
 export class ProductFormComponent implements OnInit, OnDestroy {
-  private readonly fb = inject(FormBuilder);
-  private readonly productService = inject(ProductService);
-  private readonly categoryService = inject(CategoryService);
-  private readonly router = inject(Router);
-  private readonly route = inject(ActivatedRoute);
+  private readonly fb: FormBuilder = inject(FormBuilder);
+  private readonly productService: ProductService = inject(ProductService);
+  private readonly categoryService: CategoryService = inject(CategoryService);
+  private readonly router: Router = inject(Router);
+  private readonly route: ActivatedRoute = inject(ActivatedRoute);
   private readonly destroy$ = new Subject<void>();
 
   productForm: FormGroup;
