@@ -14,18 +14,21 @@ public class ProductService : IProductService
     private readonly IProductRepository _productRepository;
     private readonly ICategoryRepository _categoryRepository;
     private readonly ICacheService _cacheService;
+    private readonly ICurrencyFormattingService _currencyService;
     private readonly ProductSearchEngine<Product> _searchEngine;
 
     public ProductService(
         ILogger<ProductService> logger,
         IProductRepository productRepository,
         ICategoryRepository categoryRepository,
-        ICacheService cacheService)
+        ICacheService cacheService,
+        ICurrencyFormattingService currencyService)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
         _categoryRepository = categoryRepository ?? throw new ArgumentNullException(nameof(categoryRepository));
         _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
+        _currencyService = currencyService ?? throw new ArgumentNullException(nameof(currencyService));
 
        
         _searchEngine = new ProductSearchEngine<Product>()
@@ -370,7 +373,7 @@ public class ProductService : IProductService
         }
     }
 
-    private static ProductDto MapToDto(Product product, string? categoryName = null)
+    private ProductDto MapToDto(Product product, string? categoryName = null)
     {
         return new ProductDto(
             Id: product.Id,
@@ -378,6 +381,7 @@ public class ProductService : IProductService
             Description: product.Description,
             SKU: product.SKU,
             Price: product.Price,
+            FormattedPrice: _currencyService.FormatAsSouthAfricanRandSimple(product.Price),
             Quantity: product.Quantity,
             CategoryId: product.CategoryId,
             CategoryName: categoryName,

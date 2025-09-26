@@ -6,6 +6,7 @@ public record ProductDto(
     string? Description,
     string SKU,
     decimal Price,
+    string FormattedPrice,
     int Quantity,
     int CategoryId,
     string? CategoryName,
